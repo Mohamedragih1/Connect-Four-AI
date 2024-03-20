@@ -24,7 +24,7 @@ size = (width, height)
 
 RADIUS = int(SQUARESIZE/2 - 5)
 
-board = Connect4Game(100,200)
+game = Connect4Game(COLUMN_COUNT, ROW_COUNT)
 
 def draw_board(board):
 	for c in range(COLUMN_COUNT):
@@ -42,7 +42,7 @@ def draw_board(board):
 
 
 screen = pygame.display.set_mode(size)
-draw_board(board)
+draw_board(game)
 pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
@@ -56,7 +56,7 @@ while not game_over:
 		if event.type == pygame.MOUSEMOTION:
 			pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
 			posx = event.pos[0]
-			if board.player == 1:
+			if game.player == 1:
 				pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
 			else: 
 				pygame.draw.circle(screen, YELLOW, (posx, int(SQUARESIZE/2)), RADIUS)
@@ -68,8 +68,8 @@ while not game_over:
 			posx = event.pos[0]
 			col = int(math.floor(posx/SQUARESIZE))
 
-			board.play(col)
-			draw_board(board)
-
+			game.play(col)
+			draw_board(game)
+        
 			if game_over:
 				pygame.time.wait(3000)
