@@ -1,8 +1,5 @@
 import numpy as np
-from heuristic import evaluate_board,EMPTY, ROWS, COLS, MIN_WINNING_LENGTH
-
-PLAYER1 = 1
-PLAYER2 = 2
+from heuristic import evaluate_board,EMPTY, ROWS, COLS, MIN_WINNING_LENGTH, PLAYER1, PLAYER2
 
 INF = float('inf')
 
@@ -78,6 +75,8 @@ def minimax(board, depth, maximizing_player, max_depth):
 def get_best_move(board, depth):
     best_score = -INF
     best_col = None
+    
+    # Test every move
     for col in range(COLS):
         if is_valid_move(board, col):
             temp_board = board.copy()
