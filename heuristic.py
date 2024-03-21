@@ -1,4 +1,5 @@
 import numpy as np
+import re
 ROWS = 6
 COLS = 7
 MIN_WINNING_LENGTH = 4
@@ -7,61 +8,87 @@ PLAYER1 = 1
 PLAYER2 = 2
 
 
-def evaluate_window(window, player):
-    score = 0
-    opponent = 3 - player  # Assuming only two players (1 and 2)
+evaluation_array = np.array([
+    [300, 400, 500, 700, 500, 400, 300],
+    [400, 600, 800, 1000, 800, 600, 400],
+    [500, 800, 1100, 1300, 1100, 800, 500],
+    [500, 800, 1100, 1300, 1100, 800, 500],
+    [400, 600, 800, 1000, 800, 600, 400],
+    [300, 400, 500, 700, 500, 400, 300]
+])
 
-    player_count = np.count_nonzero(window == player)
-    opponent_count = np.count_nonzero(window == opponent)
-    empty_count = np.count_nonzero(window == EMPTY)
 
-    # Calculate scores based on connected pieces
-    if player_count >= MIN_WINNING_LENGTH:
-        score += (player_count - MIN_WINNING_LENGTH + 1)  # Additional points for every extra connected piece beyond 4
+def compare_evaluation(array):
+    rows, cols = np.where(array == 2)
+    sum = evaluation_array[rows, cols].sum()
+    return sum
 
-    if opponent_count >= MIN_WINNING_LENGTH:
-        score -= (opponent_count - MIN_WINNING_LENGTH + 1)   # Additional penalty for opponent having more than 4 connected pieces
 
+def count_pattern_in_string(text, pattern):
+    return len(re.findall(pattern, text))
+
+
+def count_pattern_in_array(array, pattern):
+    count = 0
+
+    # Count patterns in rows
+    for row in array:
+        row_str = ''.join(map(str, row))
+        count += sum(1 for _ in re.finditer(f'(?=({pattern}))', row_str))
+
+    # Count patterns in columns
+    for col in array.T:
+        col_str = ''.join(map(str, col))
+        count += sum(1 for _ in re.finditer(f'(?=({pattern}))', col_str))
+
+    # Count patterns in diagonals
+    for diag in [array.diagonal(i) for i in range(-(array.shape[0] - 1), array.shape[1])]:
+        diag_str = ''.join(map(str, diag))
+        count += sum(1 for _ in re.finditer(f'(?=({pattern}))', diag_str))
+
+    for diag in [np.flipud(array).diagonal(i) for i in range(-(array.shape[0] - 1), array.shape[1])]:
+        diag_str = ''.join(map(str, diag))
+        count += sum(1 for _ in re.finditer(f'(?=({pattern}))', diag_str))
+
+    return count
+
+
+def find_score(array):
+    patterns_2222 = ['2222']
+    patterns_1111 = ['1111']
+    score = [0, 0]
+    for pattern in patterns_2222:
+        score[0] += count_pattern_in_array(array, pattern)
+    for pattern in patterns_1111:
+        score[1] += count_pattern_in_array(array, pattern)
     return score
 
 
-def evaluate_board(board):
-    score = 0
-    center_weight = 2  # Weight for cells in the center
+def find_fours(array):
+    pattern_2222 = '2222'
+    return 1000000 * count_pattern_in_array(array, pattern_2222)
 
-    # Iterate over all cells on the game board
-    for row in range(ROWS - MIN_WINNING_LENGTH + 1):
-        for col in range(COLS):
-            window = board[row, col:col+MIN_WINNING_LENGTH]
-            score += evaluate_window(window, PLAYER1)
 
-    for row in range(COLS - MIN_WINNING_LENGTH + 1):
-        for col in range(ROWS):
-            window = board[col, row:row+MIN_WINNING_LENGTH]
-            score += evaluate_window(window, PLAYER1)
+def find_threes(array):
+    patterns = ['0222', '2220', '2202', '2022']
+    sum = 0
+    for pattern in patterns:
+        sum += 40000 * count_pattern_in_array(array, pattern)
+    return sum
 
-    for row in range(COLS - MIN_WINNING_LENGTH + 1):
-        for col in range(ROWS):
-            if row <= ROWS - MIN_WINNING_LENGTH and col <= COLS - MIN_WINNING_LENGTH:
-                window = np.diag(board[row:row+MIN_WINNING_LENGTH, col:col+MIN_WINNING_LENGTH])
-                score += evaluate_window(window, PLAYER1)
 
-            if row <= ROWS - MIN_WINNING_LENGTH and col >= MIN_WINNING_LENGTH - 1:
-                window = np.diag(np.fliplr(board[row:row+MIN_WINNING_LENGTH, col-MIN_WINNING_LENGTH+1:col+1]))
-                score += evaluate_window(window, PLAYER1)
+def find_twos(array):
+    patterns = ['0022', '0220', '2200', '2002', '2020', '0202']
+    sum = 0
+    for pattern in patterns:
+        sum += 10000 * count_pattern_in_array(array, pattern)
+    return sum
 
-            # # Adjust score based on cell's position in the center
-            # center_col = COLS // 2  # Center column
-            # center_row = ROWS // 2  # Center row
 
-            # if row == center_row and col == center_col:
-            #     score += center_weight  # Add weight for center cell
-            # elif row == center_row - 1 or row == center_row + 1:
-            #     if col == center_col - 1 or col == center_col + 1:
-            #         score += center_weight / 2  # Add half weight for adjacent cells to center
-            # elif row == center_row - 2 or row == center_row + 2:
-            #     if col == center_col - 2 or col == center_col + 2:
-            #         score += center_weight / 3  # Add one-third weight for cells two positions away from center
-
-    return score
-
+def calculate_heuristic(array):
+    sum = 0
+    sum += compare_evaluation(array)
+    sum += find_fours(array)
+    sum += find_threes(array)
+    sum += find_twos(array)
+    return sum

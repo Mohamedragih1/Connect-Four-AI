@@ -1,42 +1,24 @@
 import numpy as np
-from heuristic import evaluate_board,EMPTY, ROWS, COLS, MIN_WINNING_LENGTH, PLAYER1, PLAYER2
 
-def main():
-    board = np.zeros((ROWS, COLS), dtype=int)
-    game_over = False
-    turn = 0
-    k = int(input("Enter K:"))
-    print("Welcome to Connect Four!")
+class Connect4Game:
+    def __init__(self, columns, rows):
+        self.columns = columns
+        self.rows = rows
+        self.board = np.zeros((rows, columns))
+        self.player = 1
+        self.moves_left = columns * rows
 
-    while not game_over:
-        if turn % 2 == 0:
-            col = get_best_move(board, k)  # AI player
-            print(f"AI player plays column {col}")
-            row = get_next_empty_row(board, col)
-            board[row][col] = PLAYER2
+    def play(self, column):
+        for row in range(self.rows-1, -1, -1):
+            if self.board[row][column] == 0:
+                self.board[row][column] = self.player
+                self.moves_left -= 1
+                self.switch_player()
+                return True
+        return False    
+
+    def switch_player(self):
+        if self.player == 1:
+            self.player = 2
         else:
-            print_board(board)
-            col = int(input("Player 1, choose a column (0-6): "))
-            while col not in range(COLS) or not is_valid_move(board, col):
-                col = int(input("Invalid move. Please choose a valid column (0-6): "))
-            row = get_next_empty_row(board, col)
-            board[row][col] = PLAYER1
-
-        if is_winning_move(board, PLAYER1):
-            print_board(board)
-            print("Player 1 wins!")
-            game_over = True
-        elif is_winning_move(board, PLAYER2):
-            print_board(board)
-            print("AI player wins!")
-            game_over = True
-        elif len(get_valid_moves(board)) == 0:
-            print_board(board)
-            print("It's a tie!")
-            game_over = True
-
-        turn += 1
-
-
-if __name__ == "__main__":
-    main()
+            self.player = 1
