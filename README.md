@@ -44,3 +44,40 @@ Through experimentation, we compared the performance of different Minimax approa
 - Normal Minimax: The least efficient as it checks losing moves unnecessarily.
 - Pruning Minimax: An improvement over normal Minimax due to its pruning process.
 - Expectation Minimax: Slightly better than Pruning Minimax.
+
+## Video
+
+
+The video's speed got *6 so the video can be uploaded
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://github.com/Mohamedragih1/Connect-Four-AI/assets/93843532/62d8a915-fabd-4455-b260-08d572305033
+
+
+
+
+
+
